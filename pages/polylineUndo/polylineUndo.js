@@ -1,6 +1,6 @@
 import Stack from './stack';
 import Konva from "konva";
-import { createMachine, interpret } from "xstate";
+import {createMachine, interpret} from "xstate";
 
 const stage = new Konva.Stage({
     container: "container",
@@ -16,7 +16,7 @@ stage.add(dessin);
 stage.add(temporaire);
 
 const MAX_POINTS = 10;
-let polyline // La polyline en cours de construction;
+let polyline // La polyline en cours de construction ;
 
 const polylineMachine = createMachine(
     {
@@ -119,6 +119,8 @@ const polylineMachine = createMachine(
                 polyline.points(newPoints);
                 polyline.stroke("black"); // On change la couleur
                 // On sauvegarde la polyline dans la couche de dessin
+
+                //action que l'on veut annuler
                 dessin.add(polyline); // On l'ajoute à la couche de dessin
             },
             addPoint: (context, event) => {
@@ -139,6 +141,7 @@ const polylineMachine = createMachine(
                 polyline.points(oldPoints.concat(provisoire)); // Set the updated points to the line
                 temporaire.batchDraw(); // Redraw the layer to reflect the changes
             },
+
         },
         guards: {
             pasPlein: (context, event) => {
@@ -171,3 +174,80 @@ window.addEventListener("keydown", (event) => {
     console.log("Key pressed:", event.key);
     polylineService.send(event.key);
 });
+
+class UndoManager {
+
+    constructor() {
+        this.undoPile = new Stack()
+        this.redoPile = new Stack()
+    }
+
+    canUndo() {
+        if (this.undoPile.isEmpty()) {
+            return not.canUndo()
+        }
+    }
+
+    canRedo() {
+        if (this.undoPile.isEmpty()) {
+            return not.canRedo()
+        }
+    }
+
+    undo() {
+        if (this.canUndo()) {
+            this.undoPile.pop(polyline)
+            this.redoPile.push(polyline)
+            polyline.remove()
+
+        }
+    }
+
+    redo() {
+        if (this.canRedo()) {
+            this.redoPile.pop(polyline)
+            this.undoPile.push(polyline)
+            dessin.add(polyline)
+        }
+
+    }
+
+    execute(Command) {
+        Command.execute()
+    }
+}
+
+class Command {
+
+    constructor() {
+    }
+
+    execute() {
+        dessin.add(polyline)
+    }
+
+    undo() {
+        polyline.remove()
+    }
+}
+
+let UndoButton = document.getElementById("undo");
+
+UndoButton.addEventListener("click", () => {
+        console.log("undo");
+        polylineService.send("undo");
+    }
+);
+
+let RedoButton = document.getElementById("redo");
+
+UndoButton.addEventListener("click", () => {
+        console.log("redo");
+        polylineService.send("redo");
+    }
+);
+
+
+
+
+
