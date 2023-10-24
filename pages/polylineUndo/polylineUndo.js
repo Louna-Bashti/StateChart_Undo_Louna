@@ -196,30 +196,30 @@ class UndoManager {
 
     undo() {
         if (this.canUndo()) {
-            this.undoPile.pop(polyline)
-            this.redoPile.push(polyline)
-            polyline.remove()
+            this.undoPile.pop(Command)
+            this.redoPile.push(Command)
+            Command.undo(polyline)
 
         }
     }
 
     redo() {
         if (this.canRedo()) {
-            this.redoPile.pop(polyline)
-            this.undoPile.push(polyline)
-            dessin.add(polyline)
+            this.redoPile.pop(Command)
+            this.undoPile.push(Command)
+            Command.execute(polyline)
         }
 
     }
 
-    execute(Command) {
-        Command.execute()
-    }
+
 }
 
 class Command {
 
     constructor() {
+        this.polyline,
+        this.dessin
     }
 
     execute() {
@@ -241,9 +241,9 @@ UndoButton.addEventListener("click", () => {
 
 let RedoButton = document.getElementById("redo");
 
-UndoButton.addEventListener("click", () => {
+RedoButton.addEventListener("click", () => {
         console.log("redo");
-        polylineService.send("redo");
+        UndoManager.redo()
     }
 );
 
