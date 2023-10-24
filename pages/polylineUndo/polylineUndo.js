@@ -121,7 +121,9 @@ const polylineMachine = createMachine(
                 // On sauvegarde la polyline dans la couche de dessin
 
                 //action que l'on veut annuler
-                dessin.add(polyline); // On l'ajoute à la couche de dessin
+                new Command();
+                UndoManager.execute();
+                //dessin.add(polyline); // On l'ajoute à la couche de dessin
             },
             addPoint: (context, event) => {
                 const pos = stage.getPointerPosition();
@@ -183,33 +185,31 @@ class UndoManager {
     }
 
     canUndo() {
-        if (this.undoPile.isEmpty()) {
-            return not.canUndo()
-        }
+        return !this.undoPile.isEmpty();
     }
 
     canRedo() {
-        if (this.undoPile.isEmpty()) {
-            return not.canRedo()
-        }
+        return !this.redoPile.isEmpty();
     }
 
-    undo() {
-        if (this.canUndo()) {
+    static undo() {
+        if (this.canUndo()===true) {
             this.undoPile.pop(Command)
             this.redoPile.push(Command)
             Command.undo(polyline)
-
         }
     }
 
-    redo() {
-        if (this.canRedo()) {
+    static redo() {
+        if (this.canRedo()===true) {
             this.redoPile.pop(Command)
             this.undoPile.push(Command)
             Command.execute(polyline)
         }
 
+    }
+    static execute() {
+        Command.execute()
     }
 
 
@@ -218,15 +218,13 @@ class UndoManager {
 class Command {
 
     constructor() {
-        this.polyline,
-        this.dessin
     }
 
-    execute() {
+    static execute() {
         dessin.add(polyline)
     }
 
-    undo() {
+    static undo() {
         polyline.remove()
     }
 }
@@ -235,7 +233,7 @@ let UndoButton = document.getElementById("undo");
 
 UndoButton.addEventListener("click", () => {
         console.log("undo");
-        polylineService.send("undo");
+        UndoManager.undo()
     }
 );
 
