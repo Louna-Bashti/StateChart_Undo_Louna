@@ -121,7 +121,7 @@ const polylineMachine = createMachine(
                 // On sauvegarde la polyline dans la couche de dessin
 
                 //action que l'on veut annuler
-                new Command();
+                new Command(polyline, dessin);
                 UndoManager.execute();
                 //dessin.add(polyline); // On l'ajoute à la couche de dessin
             },
@@ -193,18 +193,18 @@ class UndoManager {
     }
 
     static undo() {
-        if (this.canUndo()===true) {
+        if (this.canUndo) {
             this.undoPile.pop(Command)
             this.redoPile.push(Command)
-            Command.undo(polyline)
+            Command.undo()
         }
     }
 
     static redo() {
-        if (this.canRedo()===true) {
+        if (this.canRedo) {
             this.redoPile.pop(Command)
             this.undoPile.push(Command)
-            Command.execute(polyline)
+            Command.execute()
         }
 
     }
